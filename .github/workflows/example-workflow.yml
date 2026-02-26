@@ -1,0 +1,51 @@
+name: Example Build & Attest
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  attest:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository }}/my-app
+      IMAGE_TAG: latest
+      ARTIFACTS: |
+        artifact1.txt
+        artifact2.bin
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t $IMAGE_NAME:$IMAGE_TAG .
+
+      - name: Push Docker image
+        run: docker push $IMAGE_NAME:$IMAGE_TAG
+
+      - name: Get image digest
+        id: digest
+        run: |
+          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $IMAGE_NAME:$IMAGE_TAG | cut -d'@' -f2)
+          echo "digest=sha256:$DIGEST" >> $GITHUB_OUTPUT
+
+      - name: Attest Docker image
+        uses: BoomchainLabs/attest-build-provenance@v1.0.0
+        with:
+          subject-name: ${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.digest.outputs.digest }}
+          predicate-type: https://slsa.dev/provenance/v0.2
+          predicate: '{"buildType":"docker","builder":"GitHub Actions","source":"${{ github.repository }}"}'
+          push-to-registry: true
+          create-storage-record: true
+          show-summary: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Attest additional artifacts
+        uses: BoomchainLabs/attest-build-provenance@v1.0.0
+        with:
+          subject-path: "artifact1.txt,artifact2.bin"
+          predicate-type: https://slsa.dev/provenance/v0.2
+          predicate: '{"buildType":"file","builder":"GitHub Actions","source":"${{ github.repository }}"}'
+          show-summary: true
