@@ -1,5 +1,5 @@
-name: "Attest Build Provenance"
-description: "Generate provenance attestations for Docker images and other build artifacts"
+name: "BoomchainLabs Attest Build Provenance"
+description: "Generate signed build provenance attestations for Docker images and workflow artifacts"
 author: "BoomchainLabs"
 branding:
   color: "blue"
@@ -7,48 +7,48 @@ branding:
 
 inputs:
   subject-path:
-    description: "Path(s) to artifact(s) (supports glob). Only one of 'subject-path', 'subject-digest', or 'subject-checksums' can be used."
+    description: "Path(s) to artifact(s). Only one of subject-path, subject-digest, or subject-checksums can be used."
     required: false
   subject-digest:
-    description: "Digest of the subject (format: algorithm:hex_digest). Requires subject-name."
+    description: "Digest of the subject (algorithm:hex_digest). Requires subject-name."
     required: false
   subject-name:
-    description: "Name of the subject. Required when using 'subject-digest'."
+    description: "Name of the subject. Required when using subject-digest."
     required: false
   subject-checksums:
-    description: "Path to a checksums file containing digests and names."
+    description: "Path to a file containing digests and names of artifacts."
     required: false
   predicate-type:
-    description: "URI identifying the predicate type."
+    description: "URI identifying the type of the attestation predicate."
     required: true
   predicate:
-    description: "JSON string of attestation predicate (max 16MB)."
+    description: "JSON string containing the attestation predicate. Max 16MB."
     required: true
   predicate-path:
-    description: "Path to file containing predicate (max 16MB). Only one of predicate or predicate-path can be used."
+    description: "Path to file containing predicate. Max 16MB. Only one of predicate/predicate-path can be used."
     required: false
   push-to-registry:
     description: "Push attestation to registry (requires subject-name & subject-digest)."
     default: false
   create-storage-record:
-    description: "Create a storage record for the artifact (requires push-to-registry=true)."
+    description: "Create GitHub storage record (requires push-to-registry=true)."
     default: true
   show-summary:
     description: "Attach list of generated attestations to workflow summary."
     default: true
   github-token:
-    description: "GitHub token for API requests"
+    description: "GitHub token for authenticated API requests."
     default: ${{ github.token }}
 
 outputs:
   bundle-path:
-    description: "Path to attestation bundle"
+    description: "Path to the attestation bundle."
   attestation-id:
-    description: "Attestation ID"
+    description: "Attestation ID."
   attestation-url:
-    description: "URL for attestation summary"
+    description: "URL for the attestation summary."
   storage-record-ids:
-    description: "GitHub IDs for storage records"
+    description: "GitHub IDs of created storage records."
 
 runs:
   using: "composite"
